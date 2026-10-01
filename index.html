@@ -1,0 +1,1317 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hiperpixel Studio & Player</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body, html {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background-color: #121212;
+      color: #e0e0e0;
+    }
+
+    .hp-app {
+      display: flex;
+      flex-direction: column;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Telas de Navegação */
+    .hp-screen {
+      display: none;
+      width: 100vw;
+      height: 100vh;
+      flex-direction: column;
+      overflow: hidden;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    .hp-screen.active {
+      display: flex;
+    }
+
+    /* Tela 0: Menu Inicial */
+    .hp-landing {
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at center, #242424 0%, #101010 100%);
+      gap: 32px;
+    }
+
+    .hp-landing-title {
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      color: #00e676;
+      text-transform: uppercase;
+      text-shadow: 0 0 15px rgba(0, 230, 118, 0.25);
+    }
+
+    .hp-landing-subtitle {
+      font-size: 14px;
+      color: #888888;
+      margin-top: -20px;
+    }
+
+    .hp-cards-container {
+      display: flex;
+      gap: 24px;
+      margin-top: 10px;
+    }
+
+    .hp-card-btn {
+      width: 260px;
+      height: 190px;
+      background-color: #1c1c1c;
+      border: 2px solid #2e2e2e;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      cursor: pointer;
+      transition: all 0.2s ease-in-out;
+      text-align: center;
+      gap: 12px;
+    }
+
+    .hp-card-btn:hover {
+      border-color: #00e676;
+      background-color: #242424;
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(0, 230, 118, 0.15);
+    }
+
+    .hp-card-icon {
+      font-size: 38px;
+    }
+
+    .hp-card-label {
+      font-size: 16px;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .hp-card-desc {
+      font-size: 12px;
+      color: #888888;
+      line-height: 1.4;
+    }
+
+    /* Barra Superior */
+    .hp-topbar {
+      height: 48px;
+      background-color: #1e1e1e;
+      border-bottom: 1px solid #333333;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      flex-shrink: 0;
+      z-index: 10;
+    }
+
+    .hp-topbar-left, .hp-topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* Controles e Botões */
+    .hp-btn {
+      background-color: #2e2e2e;
+      color: #ffffff;
+      border: 1px solid #444444;
+      padding: 5px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+      transition: background-color 0.15s, border-color 0.15s;
+    }
+
+    .hp-btn:hover {
+      background-color: #3e3e3e;
+      border-color: #666666;
+    }
+
+    .hp-btn-accent {
+      background-color: #00e676;
+      border-color: #00c853;
+      color: #000000;
+      font-weight: 700;
+    }
+    .hp-btn-accent:hover {
+      background-color: #00ff84;
+      border-color: #00e676;
+    }
+
+    .hp-btn-warning {
+      background-color: #ff9100;
+      border-color: #e65100;
+      color: #000000;
+      font-weight: 700;
+    }
+    .hp-btn-warning:hover {
+      background-color: #ffa726;
+    }
+
+    .hp-btn-tool {
+      background-color: #2a2a2a;
+      border: 1px solid #444444;
+      color: #e0e0e0;
+    }
+    .hp-btn-tool.active {
+      background-color: #9c27b0;
+      border-color: #ba68c8;
+      color: #ffffff;
+      box-shadow: 0 0 8px rgba(186, 104, 200, 0.4);
+    }
+
+    .hp-btn-toggle-reveal {
+      background-color: #1f2937;
+      border: 1px solid #374151;
+      color: #60a5fa;
+    }
+    .hp-btn-toggle-reveal.active {
+      background-color: #2563eb;
+      border-color: #3b82f6;
+      color: #ffffff;
+      box-shadow: 0 0 8px rgba(59, 130, 246, 0.4);
+    }
+
+    .hp-badge-custom {
+      font-size: 10px;
+      background-color: #3b82f6;
+      color: #ffffff;
+      padding: 2px 6px;
+      border-radius: 3px;
+      margin-left: 4px;
+    }
+
+    .hp-input-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: #aaaaaa;
+    }
+
+    .hp-input-num {
+      width: 52px;
+      background-color: #121212;
+      border: 1px solid #444444;
+      color: #ffffff;
+      padding: 4px 6px;
+      border-radius: 4px;
+      font-size: 12px;
+      outline: none;
+    }
+
+    .hp-input-range {
+      width: 60px;
+      cursor: pointer;
+    }
+
+    .hp-input-color {
+      width: 26px;
+      height: 22px;
+      padding: 0;
+      border: none;
+      background: none;
+      cursor: pointer;
+    }
+
+    .hp-stat-chip {
+      background-color: #121212;
+      border: 1px solid #333333;
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 12px;
+      color: #00e676;
+      font-weight: 700;
+    }
+
+    .hp-status-msg {
+      font-size: 12px;
+      font-weight: 600;
+      color: #ff5252;
+    }
+
+    /* Layout Visual */
+    .hp-main-layout {
+      display: flex;
+      flex: 1;
+      height: calc(100vh - 48px - 64px);
+      overflow: hidden;
+      background-color: #161616;
+      position: relative;
+    }
+
+    .hp-split-pane {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid #2a2a2a;
+      overflow: hidden;
+      position: relative;
+    }
+    .hp-split-pane:last-child {
+      border-right: none;
+    }
+
+    .hp-pane-header {
+      height: 32px;
+      background-color: #1b1b1b;
+      border-bottom: 1px solid #282828;
+      font-size: 11px;
+      font-weight: 700;
+      color: #777777;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 12px;
+      letter-spacing: 0.5px;
+    }
+
+    .hp-canvas-viewport {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+      background-color: #0f0f0f;
+    }
+
+    .hp-canvas-viewport.hp-white-bg {
+      background-color: #ffffff;
+    }
+
+    .hp-transform-layer {
+      transform-origin: center center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.08s ease-out;
+    }
+
+    /* Legenda Inferior */
+    .hp-legend-drawer {
+      height: 64px;
+      background-color: #1a1a1a;
+      border-top: 1px solid #2c2c2c;
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      gap: 10px;
+      overflow-x: auto;
+      flex-shrink: 0;
+    }
+
+    .hp-swatch-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-width: 44px;
+      height: 48px;
+      background-color: #242424;
+      border: 1px solid #3a3a3a;
+      border-radius: 4px;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: all 0.15s;
+    }
+
+    .hp-swatch-box:hover {
+      border-color: #666666;
+    }
+
+    .hp-swatch-box.selected {
+      border: 2px solid #00e676;
+      background-color: #2e2e2e;
+      transform: translateY(-2px);
+    }
+
+    .hp-swatch-color {
+      width: 28px;
+      height: 18px;
+      border-radius: 2px;
+      border: 1px solid rgba(0, 0, 0, 0.4);
+      margin-bottom: 2px;
+    }
+
+    .hp-swatch-code {
+      font-size: 11px;
+      font-weight: 800;
+      color: #ffffff;
+    }
+
+    /* Modal / Faixa de Vitória */
+    .hp-victory-pill {
+      display: none;
+      position: absolute;
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(135deg, #00e676, #00b0ff);
+      color: #000000;
+      padding: 8px 24px;
+      border-radius: 24px;
+      font-size: 18px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      box-shadow: 0 6px 20px rgba(0, 230, 118, 0.4);
+      z-index: 50;
+      animation: hp-pulse 0.8s infinite alternate ease-in-out;
+    }
+
+    @keyframes hp-pulse {
+      from { transform: translateX(-50%) scale(1); }
+      to { transform: translateX(-50%) scale(1.05); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="hp-app">
+
+    <!-- TELA 0: INICIAL -->
+    <section id="screenLanding" class="hp-screen hp-landing active">
+      <div class="hp-landing-title">Hiperpixel Studio</div>
+      <div class="hp-landing-subtitle">Crie desafios pixelados ou resolva mosaicos numéricos</div>
+      
+      <div class="hp-cards-container">
+        <div class="hp-card-btn" onclick="app.showScreen('create')">
+          <div class="hp-card-icon">🎨</div>
+          <div class="hp-card-label">Criar um Hiperpixel</div>
+          <div class="hp-card-desc">Carregue a imagem da matriz, visualize a prévia colorida e gere o arquivo .hpx.</div>
+        </div>
+
+        <div class="hp-card-btn" onclick="app.showScreen('solve')">
+          <div class="hp-card-icon">🧩</div>
+          <div class="hp-card-label">Resolver um Hiperpixel</div>
+          <div class="hp-card-desc">Abra um arquivo .hpx, use o balde de tinta com preenchimento conectado e revele a arte.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TELA 1: CRIAR HIPERPIXEL -->
+    <section id="screenCreate" class="hp-screen">
+      <header class="hp-topbar">
+        <div class="hp-topbar-left">
+          <button class="hp-btn" onclick="app.showScreen('landing')">← Voltar</button>
+          
+          <input type="file" id="creatorFileInput" accept="image/*" style="display: none;" onchange="app.onImageLoaded(event)">
+          <button class="hp-btn hp-btn-accent" onclick="document.getElementById('creatorFileInput').click()">Imagem Base</button>
+
+          <input type="file" id="creatorRevealFileInput" accept="image/*" style="display: none;" onchange="app.onRevealImageLoaded(event)">
+          <button class="hp-btn" onclick="document.getElementById('creatorRevealFileInput').click()">
+            Imagem Revelação
+            <span id="creatorRevealBadge" class="hp-badge-custom" style="display: none;">Personalizada</span>
+          </button>
+
+          <div class="hp-input-group">
+            <label>Linhas:</label>
+            <input type="number" id="inputRows" class="hp-input-num" value="16" min="4" max="64" onchange="app.onGridDimensionChange()">
+          </div>
+
+          <div class="hp-input-group">
+            <label>Colunas:</label>
+            <input type="number" id="inputCols" class="hp-input-num" value="16" min="4" max="64" onchange="app.onGridDimensionChange()">
+          </div>
+
+          <div class="hp-input-group">
+            <label>Grade:</label>
+            <input type="range" id="inputLineWidth" class="hp-input-range" min="1" max="20" value="2" oninput="app.onGridStyleChange()">
+            <input type="color" id="inputLineColor" class="hp-input-color" value="#000000" oninput="app.onGridStyleChange()">
+          </div>
+        </div>
+
+        <div class="hp-topbar-right">
+          <button class="hp-btn" onclick="app.adjustZoom('create', -0.15)">-</button>
+          <button class="hp-btn" onclick="app.adjustZoom('create', 0.15)">+</button>
+          <button class="hp-btn hp-btn-accent" onclick="app.exportHpxFile()">Salvar Hiperpixel (.hpx)</button>
+        </div>
+      </header>
+
+      <main class="hp-main-layout">
+        <!-- Esquerda: Imagem Original -->
+        <div class="hp-split-pane">
+          <div class="hp-pane-header">
+            <span>IMAGEM BASE ORIGINAL</span>
+          </div>
+          <div class="hp-canvas-viewport">
+            <div id="zoomContainerCreateLeft" class="hp-transform-layer">
+              <canvas id="canvasCreateOriginal"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Direita: Grade + Redução 32 Cores + Símbolos -->
+        <div class="hp-split-pane">
+          <div class="hp-pane-header">
+            <span>HIPERPIXEL GERADO</span>
+            <button id="btnToggleCreatorReveal" class="hp-btn hp-btn-toggle-reveal" onclick="app.toggleCreatorReveal()">👁 Revelar Hiperpixel</button>
+          </div>
+          <div class="hp-canvas-viewport hp-white-bg">
+            <div id="zoomContainerCreateRight" class="hp-transform-layer">
+              <canvas id="canvasCreateRight"></canvas>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <footer id="createPaletteDrawer" class="hp-legend-drawer"></footer>
+    </section>
+
+    <!-- TELA 2: RESOLVER HIPERPIXEL -->
+    <section id="screenSolve" class="hp-screen">
+      <header class="hp-topbar">
+        <div class="hp-topbar-left">
+          <button class="hp-btn" onclick="app.showScreen('landing')">← Voltar</button>
+          <input type="file" id="solverFileInput" accept=".hpx" style="display: none;" onchange="app.onHpxLoaded(event)">
+          <button class="hp-btn hp-btn-accent" onclick="document.getElementById('solverFileInput').click()">Carregar Arquivo (.hpx)</button>
+          
+          <button class="hp-btn" onclick="app.undoSolverMove()">Desfazer</button>
+          <button id="btnBucketTool" class="hp-btn hp-btn-tool" onclick="app.toggleBucketTool()">🪣 Balde (+10 cliques)</button>
+          <button class="hp-btn hp-btn-warning" onclick="app.checkAndHighlightErrors()">Destacar Erros</button>
+          
+          <div class="hp-stat-chip">Cliques: <span id="solverClickCount">0</span></div>
+          <span id="solverMessage" class="hp-status-msg"></span>
+        </div>
+
+        <div class="hp-topbar-right">
+          <button id="btnToggleVictoryView" class="hp-btn hp-btn-tool" style="display: none;" onclick="app.toggleVictoryView()">Alternar Visão</button>
+          <button class="hp-btn" onclick="app.adjustZoom('solve', -0.15)">-</button>
+          <button class="hp-btn" onclick="app.adjustZoom('solve', 0.15)">+</button>
+          <button id="btnSaveSolutionPng" class="hp-btn hp-btn-accent" style="display: none;" onclick="app.downloadSolvedPng()">Salvar Imagem (PNG)</button>
+        </div>
+      </header>
+
+      <main class="hp-main-layout" style="justify-content: center; align-items: center;">
+        <div id="victoryBadge" class="hp-victory-pill">★ VITÓRIA! ★</div>
+        <div class="hp-canvas-viewport" style="width: 100%; height: 100%;">
+          <div id="zoomContainerSolve" class="hp-transform-layer">
+            <canvas id="canvasSolveGame"></canvas>
+          </div>
+        </div>
+      </main>
+
+      <footer id="solvePaletteDrawer" class="hp-legend-drawer"></footer>
+    </section>
+
+  </div>
+
+  <script>
+    const app = {
+      currentScreen: 'landing',
+      zoomLevels: { create: 1.0, solve: 1.0 },
+
+      creator: {
+        rawImage: null,
+        revealImageSrc: null,
+        rows: 16,
+        cols: 16,
+        lineWidth: 2,
+        lineColor: '#000000',
+        palette: [],
+        mappedCells: [],
+        isRevealed: false
+      },
+
+      solver: {
+        isLoaded: false,
+        isFinished: false,
+        victoryViewMode: 'image',
+        originalDataUrl: '',
+        revealDataUrl: '',
+        rows: 16,
+        cols: 16,
+        width: 512,
+        height: 512,
+        lineWidth: 2,
+        lineColor: '#000000',
+        palette: [],
+        solutionCells: [],
+        playerGrid: {},
+        selectedColorObj: null,
+        clicks: 0,
+        history: [],
+        errorCellsSet: new Set(),
+        isPointerDown: false,
+        lastAppliedCellKey: null,
+        currentBatch: [],
+        bucketActive: false
+      },
+
+      codeAlphabet: [],
+
+      init() {
+        this.buildAlphabet();
+
+        this.cvsCreateOrig = document.getElementById('canvasCreateOriginal');
+        this.ctxCreateOrig = this.cvsCreateOrig.getContext('2d');
+        
+        this.cvsCreateRight = document.getElementById('canvasCreateRight');
+        this.ctxCreateRight = this.cvsCreateRight.getContext('2d');
+
+        this.cvsSolve = document.getElementById('canvasSolveGame');
+        this.ctxSolve = this.cvsSolve.getContext('2d');
+
+        this.bindSolverPointerEvents();
+      },
+
+      buildAlphabet() {
+        const base = "123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ".split('');
+        this.codeAlphabet = [...base];
+        for (let i = 65; i <= 90; i++) {
+          for (let j = 65; j <= 90; j++) {
+            this.codeAlphabet.push(String.fromCharCode(i) + String.fromCharCode(j));
+          }
+        }
+      },
+
+      showScreen(screenName) {
+        this.currentScreen = screenName;
+        document.querySelectorAll('.hp-screen').forEach(el => el.classList.remove('active'));
+        
+        if (screenName === 'landing') {
+          document.getElementById('screenLanding').classList.add('active');
+        } else if (screenName === 'create') {
+          document.getElementById('screenCreate').classList.add('active');
+        } else if (screenName === 'solve') {
+          document.getElementById('screenSolve').classList.add('active');
+        }
+      },
+
+      adjustZoom(target, delta) {
+        this.zoomLevels[target] = Math.max(0.3, Math.min(3.0, this.zoomLevels[target] + delta));
+        const val = this.zoomLevels[target];
+        if (target === 'create') {
+          document.getElementById('zoomContainerCreateLeft').style.transform = `scale(${val})`;
+          document.getElementById('zoomContainerCreateRight').style.transform = `scale(${val})`;
+        } else {
+          document.getElementById('zoomContainerSolve').style.transform = `scale(${val})`;
+        }
+      },
+
+      // ==========================================
+      // LÓGICA DO CRIADOR
+      // ==========================================
+
+      onImageLoaded(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+            this.creator.rawImage = img;
+            this.processCreatorImage();
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      },
+
+      onRevealImageLoaded(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          this.creator.revealImageSrc = e.target.result;
+          document.getElementById('creatorRevealBadge').style.display = 'inline-block';
+        };
+        reader.readAsDataURL(file);
+      },
+
+      onGridDimensionChange() {
+        this.creator.rows = parseInt(document.getElementById('inputRows').value, 10) || 16;
+        this.creator.cols = parseInt(document.getElementById('inputCols').value, 10) || 16;
+        if (this.creator.rawImage) this.processCreatorImage();
+      },
+
+      onGridStyleChange() {
+        this.creator.lineWidth = parseInt(document.getElementById('inputLineWidth').value, 10) || 2;
+        this.creator.lineColor = document.getElementById('inputLineColor').value || '#000000';
+        if (this.creator.rawImage) this.processCreatorImage();
+      },
+
+      toggleCreatorReveal() {
+        if (!this.creator.rawImage || this.creator.mappedCells.length === 0) return;
+        this.creator.isRevealed = !this.creator.isRevealed;
+        
+        const btn = document.getElementById('btnToggleCreatorReveal');
+        if (this.creator.isRevealed) {
+          btn.classList.add('active');
+          btn.innerText = '🔢 Ocultar Revelação';
+        } else {
+          btn.classList.remove('active');
+          btn.innerText = '👁 Revelar Hiperpixel';
+        }
+
+        const cellW = this.cvsCreateRight.width / this.creator.cols;
+        const cellH = this.cvsCreateRight.height / this.creator.rows;
+        this.renderCreatorRightCanvas(this.cvsCreateRight.width, this.cvsCreateRight.height, cellW, cellH);
+      },
+
+      processCreatorImage() {
+        if (!this.creator.rawImage) return;
+
+        const maxSide = 512;
+        let w = this.creator.rawImage.width;
+        let h = this.creator.rawImage.height;
+
+        if (w > h) {
+          if (w > maxSide) { h = Math.round((h * maxSide) / w); w = maxSide; }
+        } else {
+          if (h > maxSide) { h = Math.round((h * maxSide) / h); h = maxSide; }
+        }
+
+        this.cvsCreateOrig.width = w;
+        this.cvsCreateOrig.height = h;
+        this.cvsCreateRight.width = w;
+        this.cvsCreateRight.height = h;
+
+        this.ctxCreateOrig.drawImage(this.creator.rawImage, 0, 0, w, h);
+
+        const rows = this.creator.rows;
+        const cols = this.creator.cols;
+        const cellW = w / cols;
+        const cellH = h / rows;
+
+        const rawPixels = [];
+        const cellsMeta = [];
+
+        for (let r = 0; r < rows; r++) {
+          for (let c = 0; c < cols; c++) {
+            const centerX = Math.floor(c * cellW + cellW / 2);
+            const centerY = Math.floor(r * cellH + cellH / 2);
+            const p = this.ctxCreateOrig.getImageData(centerX, centerY, 1, 1).data;
+            const rgb = [p[0], p[1], p[2]];
+            rawPixels.push(rgb);
+            cellsMeta.push({ row: r, col: c, rgb });
+          }
+        }
+
+        const reducedCentroids = this.runKMeansQuantization(rawPixels, 32);
+
+        this.creator.palette = [];
+        let symbolIdx = 0;
+
+        reducedCentroids.forEach(color => {
+          const isWhite = color[0] >= 240 && color[1] >= 240 && color[2] >= 240;
+          const hex = this.rgbToHex(color[0], color[1], color[2]);
+          let symbol = '';
+
+          if (!isWhite) {
+            symbol = this.codeAlphabet[symbolIdx] || ('#' + symbolIdx);
+            symbolIdx++;
+          }
+
+          this.creator.palette.push({ hex, rgb: color, isWhite, symbol });
+        });
+
+        this.creator.mappedCells = cellsMeta.map(item => {
+          const nearest = this.getClosestPaletteColor(item.rgb, this.creator.palette);
+          return {
+            row: item.row,
+            col: item.col,
+            color: nearest.hex,
+            rgb: nearest.rgb,
+            isWhite: nearest.isWhite,
+            symbol: nearest.symbol
+          };
+        });
+
+        this.renderCreatorRightCanvas(w, h, cellW, cellH);
+        this.renderLegend('createPaletteDrawer', this.creator.palette);
+      },
+
+      runKMeansQuantization(pixels, k) {
+        const unique = Array.from(new Set(pixels.map(p => `${p[0]},${p[1]},${p[2]}`)))
+          .map(str => str.split(',').map(Number));
+
+        if (unique.length <= k) return unique;
+
+        let centroids = [];
+        const step = Math.floor(unique.length / k);
+        for (let i = 0; i < k; i++) {
+          centroids.push([...unique[i * step]]);
+        }
+
+        for (let iter = 0; iter < 5; iter++) {
+          const clusters = Array.from({ length: k }, () => []);
+          pixels.forEach(p => {
+            let minDist = Infinity;
+            let target = 0;
+            centroids.forEach((c, idx) => {
+              const d = Math.hypot(p[0] - c[0], p[1] - c[1], p[2] - c[2]);
+              if (d < minDist) { minDist = d; target = idx; }
+            });
+            clusters[target].push(p);
+          });
+
+          centroids = clusters.map((group, idx) => {
+            if (group.length === 0) return centroids[idx];
+            const sum = group.reduce((acc, cur) => [acc[0] + cur[0], acc[1] + cur[1], acc[2] + cur[2]], [0, 0, 0]);
+            return [
+              Math.round(sum[0] / group.length),
+              Math.round(sum[1] / group.length),
+              Math.round(sum[2] / group.length)
+            ];
+          });
+        }
+        return centroids;
+      },
+
+      getClosestPaletteColor(rgb, palette) {
+        let minDist = Infinity;
+        let selected = palette[0];
+        palette.forEach(p => {
+          const d = Math.hypot(rgb[0] - p.rgb[0], rgb[1] - p.rgb[1], rgb[2] - p.rgb[2]);
+          if (d < minDist) {
+            minDist = d;
+            selected = p;
+          }
+        });
+        return selected;
+      },
+
+      renderCreatorRightCanvas(w, h, cellW, cellH) {
+        this.ctxCreateRight.fillStyle = "#ffffff";
+        this.ctxCreateRight.fillRect(0, 0, w, h);
+
+        const fontSize = Math.max(9, Math.floor(Math.min(cellW, cellH) * 0.55));
+        this.ctxCreateRight.font = `bold ${fontSize}px sans-serif`;
+        this.ctxCreateRight.textAlign = "center";
+        this.ctxCreateRight.textBaseline = "middle";
+
+        this.creator.mappedCells.forEach(cell => {
+          const x = cell.col * cellW;
+          const y = cell.row * cellH;
+
+          if (this.creator.isRevealed) {
+            // Modo Revelado: pinta o fundo da célula com a cor quantizada
+            this.ctxCreateRight.fillStyle = cell.isWhite ? '#ffffff' : cell.color;
+            this.ctxCreateRight.fillRect(x, y, cellW, cellH);
+          } else {
+            // Modo Normal: exibe o símbolo sobre o fundo branco
+            if (!cell.isWhite && cell.symbol) {
+              this.ctxCreateRight.fillStyle = "#111111";
+              this.ctxCreateRight.fillText(cell.symbol, x + cellW / 2, y + cellH / 2);
+            }
+          }
+        });
+
+        this.ctxCreateRight.lineWidth = this.creator.lineWidth;
+        this.ctxCreateRight.strokeStyle = this.creator.lineColor;
+        this.ctxCreateRight.beginPath();
+
+        for (let r = 0; r <= this.creator.rows; r++) {
+          const y = r * cellH;
+          this.ctxCreateRight.moveTo(0, y);
+          this.ctxCreateRight.lineTo(w, y);
+        }
+        for (let c = 0; c <= this.creator.cols; c++) {
+          const x = c * cellW;
+          this.ctxCreateRight.moveTo(x, 0);
+          this.ctxCreateRight.lineTo(x, h);
+        }
+        this.ctxCreateRight.stroke();
+      },
+
+      renderLegend(drawerId, palette, onSelectCallback = null) {
+        const container = document.getElementById(drawerId);
+        container.innerHTML = '';
+
+        palette.filter(p => !p.isWhite).forEach(item => {
+          const box = document.createElement('div');
+          box.className = 'hp-swatch-box';
+          box.innerHTML = `
+            <div class="hp-swatch-color" style="background-color: ${item.hex};"></div>
+            <div class="hp-swatch-code">${item.symbol}</div>
+          `;
+          box.onclick = () => {
+            container.querySelectorAll('.hp-swatch-box').forEach(el => el.classList.remove('selected'));
+            box.classList.add('selected');
+            if (onSelectCallback) onSelectCallback(item);
+          };
+          container.appendChild(box);
+        });
+      },
+
+      exportHpxFile() {
+        if (!this.creator.rawImage || this.creator.mappedCells.length === 0) return;
+
+        const originalData = this.cvsCreateOrig.toDataURL('image/png');
+        const payload = {
+          version: "3.0",
+          dimensions: { width: this.cvsCreateOrig.width, height: this.cvsCreateOrig.height },
+          grid: {
+            rows: this.creator.rows,
+            cols: this.creator.cols,
+            lineWidth: this.creator.lineWidth,
+            lineColor: this.creator.lineColor
+          },
+          palette: this.creator.palette,
+          cells: this.creator.mappedCells,
+          originalImage: originalData,
+          revealImage: this.creator.revealImageSrc || originalData
+        };
+
+        const blob = new Blob([JSON.stringify(payload)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = "mosaico.hpx";
+        a.click();
+        URL.revokeObjectURL(url);
+      },
+
+      // ==========================================
+      // LÓGICA DO RESOLVEDOR (JOGO & BALDE)
+      // ==========================================
+
+      bindSolverPointerEvents() {
+        this.cvsSolve.addEventListener('mousedown', (e) => this.onPointerStart(e));
+        window.addEventListener('mousemove', (e) => this.onPointerMove(e));
+        window.addEventListener('mouseup', () => this.onPointerEnd());
+
+        this.cvsSolve.addEventListener('touchstart', (e) => {
+          if (e.touches.length === 1) {
+            e.preventDefault();
+            this.onPointerStart(e.touches[0]);
+          }
+        }, { passive: false });
+
+        window.addEventListener('touchmove', (e) => {
+          if (this.solver.isPointerDown && e.touches.length === 1) {
+            e.preventDefault();
+            this.onPointerMove(e.touches[0]);
+          }
+        }, { passive: false });
+
+        window.addEventListener('touchend', () => this.onPointerEnd());
+      },
+
+      toggleBucketTool() {
+        this.solver.bucketActive = !this.solver.bucketActive;
+        const btn = document.getElementById('btnBucketTool');
+        if (this.solver.bucketActive) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      },
+
+      toggleVictoryView() {
+        if (!this.solver.isFinished) return;
+        this.solver.victoryViewMode = (this.solver.victoryViewMode === 'image') ? 'grid' : 'image';
+        this.drawSolverCanvas();
+      },
+
+      onHpxLoaded(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          try {
+            const data = JSON.parse(e.target.result);
+            this.setupSolverGame(data);
+          } catch (err) {
+            alert('Formato de arquivo .hpx inválido.');
+          }
+        };
+        reader.readAsText(file);
+      },
+
+      setupSolverGame(data) {
+        this.solver = {
+          isLoaded: true,
+          isFinished: false,
+          victoryViewMode: 'image',
+          originalDataUrl: data.originalImage,
+          revealDataUrl: data.revealImage || data.originalImage,
+          rows: data.grid.rows,
+          cols: data.grid.cols,
+          width: data.dimensions.width,
+          height: data.dimensions.height,
+          lineWidth: data.grid.lineWidth,
+          lineColor: data.grid.lineColor,
+          palette: data.palette,
+          solutionCells: data.cells,
+          playerGrid: {},
+          selectedColorObj: null,
+          clicks: 0,
+          history: [],
+          errorCellsSet: new Set(),
+          isPointerDown: false,
+          lastAppliedCellKey: null,
+          currentBatch: [],
+          bucketActive: false
+        };
+
+        document.getElementById('solverClickCount').innerText = '0';
+        document.getElementById('solverMessage').innerText = '';
+        document.getElementById('victoryBadge').style.display = 'none';
+        document.getElementById('btnSaveSolutionPng').style.display = 'none';
+        document.getElementById('btnToggleVictoryView').style.display = 'none';
+        document.getElementById('btnBucketTool').classList.remove('active');
+
+        this.cvsSolve.width = data.dimensions.width;
+        this.cvsSolve.height = data.dimensions.height;
+
+        this.renderLegend('solvePaletteDrawer', data.palette, (item) => {
+          this.solver.selectedColorObj = item;
+        });
+
+        this.drawSolverCanvas();
+      },
+
+      drawSolverCanvas() {
+        if (!this.solver.isLoaded) return;
+
+        const { width, height, rows, cols, lineWidth, lineColor } = this.solver;
+        const cellW = width / cols;
+        const cellH = height / rows;
+
+        if (this.solver.isFinished && this.solver.victoryViewMode === 'image') {
+          const img = new Image();
+          img.onload = () => {
+            this.ctxSolve.clearRect(0, 0, width, height);
+            this.ctxSolve.drawImage(img, 0, 0, width, height);
+          };
+          img.src = this.solver.revealDataUrl;
+          return;
+        }
+
+        this.ctxSolve.fillStyle = "#ffffff";
+        this.ctxSolve.fillRect(0, 0, width, height);
+
+        const fontSize = Math.max(9, Math.floor(Math.min(cellW, cellH) * 0.55));
+        this.ctxSolve.font = `bold ${fontSize}px sans-serif`;
+        this.ctxSolve.textAlign = "center";
+        this.ctxSolve.textBaseline = "middle";
+
+        this.solver.solutionCells.forEach(cell => {
+          const key = `${cell.row}_${cell.col}`;
+          const x = cell.col * cellW;
+          const y = cell.row * cellH;
+          const userColor = this.solver.playerGrid[key];
+
+          if (userColor) {
+            this.ctxSolve.fillStyle = userColor.hex;
+            this.ctxSolve.fillRect(x, y, cellW, cellH);
+
+            if (this.solver.errorCellsSet.has(key)) {
+              this.ctxSolve.strokeStyle = "#ff1744";
+              this.ctxSolve.lineWidth = 3;
+              this.ctxSolve.strokeRect(x + 2, y + 2, cellW - 4, cellH - 4);
+            }
+          } else {
+            if (!cell.isWhite && cell.symbol) {
+              this.ctxSolve.fillStyle = "#111111";
+              this.ctxSolve.fillText(cell.symbol, x + cellW / 2, y + cellH / 2);
+            }
+          }
+        });
+
+        this.ctxSolve.lineWidth = lineWidth;
+        this.ctxSolve.strokeStyle = lineColor;
+        this.ctxSolve.beginPath();
+
+        for (let r = 0; r <= rows; r++) {
+          this.ctxSolve.moveTo(0, r * cellH);
+          this.ctxSolve.lineTo(width, r * cellH);
+        }
+        for (let c = 0; c <= cols; c++) {
+          this.ctxSolve.moveTo(c * cellW, 0);
+          this.ctxSolve.lineTo(c * cellW, height);
+        }
+        this.ctxSolve.stroke();
+      },
+
+      getCellFromEvent(e) {
+        const rect = this.cvsSolve.getBoundingClientRect();
+        if (e.clientX < rect.left || e.clientX > rect.right || e.clientY < rect.top || e.clientY > rect.bottom) {
+          return null;
+        }
+
+        const scaleX = this.cvsSolve.width / rect.width;
+        const scaleY = this.cvsSolve.height / rect.height;
+
+        const clickX = (e.clientX - rect.left) * scaleX;
+        const clickY = (e.clientY - rect.top) * scaleY;
+
+        const cellW = this.cvsSolve.width / this.solver.cols;
+        const cellH = this.cvsSolve.height / this.solver.rows;
+
+        const col = Math.floor(clickX / cellW);
+        const row = Math.floor(clickY / cellH);
+
+        if (row < 0 || row >= this.solver.rows || col < 0 || col >= this.solver.cols) {
+          return null;
+        }
+
+        return { row, col, key: `${row}_${col}` };
+      },
+
+      onPointerStart(e) {
+        if (!this.solver.isLoaded || this.solver.isFinished) return;
+
+        const targetCell = this.getCellFromEvent(e);
+        if (!targetCell) return;
+
+        if (this.solver.bucketActive) {
+          if (!this.solver.selectedColorObj) return;
+
+          this.solver.clicks += 10;
+          document.getElementById('solverClickCount').innerText = this.solver.clicks;
+          this.solver.errorCellsSet.clear();
+
+          this.applyFloodFill(targetCell.row, targetCell.col);
+          this.evaluateSolution();
+          return;
+        }
+
+        this.solver.isPointerDown = true;
+        this.solver.currentBatch = [];
+        this.solver.clicks++;
+        document.getElementById('solverClickCount').innerText = this.solver.clicks;
+        this.solver.errorCellsSet.clear();
+
+        this.applyColorToCell(targetCell.key, true);
+      },
+
+      onPointerMove(e) {
+        if (this.solver.bucketActive || !this.solver.isPointerDown || !this.solver.isLoaded || this.solver.isFinished) return;
+
+        const targetCell = this.getCellFromEvent(e);
+        if (!targetCell) return;
+
+        if (targetCell.key !== this.solver.lastAppliedCellKey) {
+          this.applyColorToCell(targetCell.key, false);
+        }
+      },
+
+      onPointerEnd() {
+        if (!this.solver.isPointerDown) return;
+
+        this.solver.isPointerDown = false;
+        this.solver.lastAppliedCellKey = null;
+
+        if (this.solver.currentBatch.length > 0) {
+          this.solver.history.push(this.solver.currentBatch);
+          this.solver.currentBatch = [];
+        }
+
+        this.evaluateSolution();
+      },
+
+      applyColorToCell(key, isFirstClick) {
+        this.solver.lastAppliedCellKey = key;
+        const currentVal = this.solver.playerGrid[key];
+
+        if (isFirstClick && currentVal && (!this.solver.selectedColorObj || currentVal.hex.toLowerCase() === this.solver.selectedColorObj.hex.toLowerCase())) {
+          delete this.solver.playerGrid[key];
+          this.solver.currentBatch.push({ key, prev: currentVal, next: null });
+          this.drawSolverCanvas();
+          return;
+        }
+
+        if (this.solver.selectedColorObj) {
+          if (!currentVal || currentVal.hex.toLowerCase() !== this.solver.selectedColorObj.hex.toLowerCase()) {
+            this.solver.playerGrid[key] = this.solver.selectedColorObj;
+            this.solver.currentBatch.push({ key, prev: currentVal || null, next: this.solver.selectedColorObj });
+            this.drawSolverCanvas();
+          }
+        }
+      },
+
+      applyFloodFill(startRow, startCol) {
+        const rows = this.solver.rows;
+        const cols = this.solver.cols;
+
+        const cellMap = {};
+        this.solver.solutionCells.forEach(c => {
+          cellMap[`${c.row}_${c.col}`] = c;
+        });
+
+        const startCell = cellMap[`${startRow}_${startCol}`];
+        if (!startCell) return;
+
+        const targetSymbol = startCell.symbol;
+        const targetIsWhite = startCell.isWhite;
+        const fillColor = this.solver.selectedColorObj;
+
+        const visited = new Set();
+        const queue = [[startRow, startCol]];
+        const batch = [];
+
+        while (queue.length > 0) {
+          const [r, c] = queue.shift();
+          const key = `${r}_${c}`;
+
+          if (visited.has(key)) continue;
+          visited.add(key);
+
+          const cell = cellMap[key];
+          if (!cell) continue;
+
+          const matches = targetIsWhite ? cell.isWhite : (!cell.isWhite && cell.symbol === targetSymbol);
+
+          if (matches) {
+            const prevVal = this.solver.playerGrid[key] || null;
+            if (!prevVal || prevVal.hex.toLowerCase() !== fillColor.hex.toLowerCase()) {
+              this.solver.playerGrid[key] = fillColor;
+              batch.push({ key, prev: prevVal, next: fillColor });
+            }
+
+            const neighbors = [
+              [r - 1, c],
+              [r + 1, c],
+              [r, c - 1],
+              [r, c + 1]
+            ];
+
+            for (const [nr, nc] of neighbors) {
+              if (nr >= 0 && nr < rows && nc >= 0 && nc < cols) {
+                const nKey = `${nr}_${nc}`;
+                if (!visited.has(nKey)) {
+                  queue.push([nr, nc]);
+                }
+              }
+            }
+          }
+        }
+
+        if (batch.length > 0) {
+          this.solver.history.push(batch);
+          this.drawSolverCanvas();
+        }
+      },
+
+      undoSolverMove() {
+        if (!this.solver.isLoaded || this.solver.history.length === 0 || this.solver.isFinished) return;
+
+        const lastBatch = this.solver.history.pop();
+        
+        for (let i = lastBatch.length - 1; i >= 0; i--) {
+          const action = lastBatch[i];
+          if (action.prev) {
+            this.solver.playerGrid[action.key] = action.prev;
+          } else {
+            delete this.solver.playerGrid[action.key];
+          }
+        }
+
+        this.solver.errorCellsSet.clear();
+        this.drawSolverCanvas();
+        this.evaluateSolution();
+      },
+
+      evaluateSolution() {
+        const requiredCells = this.solver.solutionCells.filter(c => !c.isWhite);
+        let correctCount = 0;
+        let totalFilled = 0;
+        let whiteFilledWithError = false;
+
+        this.solver.solutionCells.forEach(cell => {
+          const key = `${cell.row}_${cell.col}`;
+          const fill = this.solver.playerGrid[key];
+
+          if (fill) {
+            totalFilled++;
+            if (cell.isWhite) {
+              whiteFilledWithError = true;
+            } else if (fill.hex.toLowerCase() === cell.color.toLowerCase()) {
+              correctCount++;
+            }
+          }
+        });
+
+        if (correctCount === requiredCells.length && !whiteFilledWithError && totalFilled === requiredCells.length) {
+          this.solver.isFinished = true;
+          this.solver.victoryViewMode = 'image';
+          document.getElementById('victoryBadge').style.display = 'block';
+          document.getElementById('btnSaveSolutionPng').style.display = 'inline-flex';
+          document.getElementById('btnToggleVictoryView').style.display = 'inline-flex';
+          document.getElementById('solverMessage').innerText = '';
+          this.drawSolverCanvas();
+        } else if (totalFilled >= requiredCells.length) {
+          document.getElementById('solverMessage').innerText = 'Há cores ou posições incorretas!';
+        } else {
+          document.getElementById('solverMessage').innerText = '';
+        }
+      },
+
+      checkAndHighlightErrors() {
+        if (!this.solver.isLoaded || this.solver.isFinished) return;
+
+        this.solver.errorCellsSet.clear();
+        let errorCount = 0;
+
+        this.solver.solutionCells.forEach(cell => {
+          const key = `${cell.row}_${cell.col}`;
+          const fill = this.solver.playerGrid[key];
+
+          if (fill) {
+            if (cell.isWhite || fill.hex.toLowerCase() !== cell.color.toLowerCase()) {
+              this.solver.errorCellsSet.add(key);
+              errorCount++;
+            }
+          }
+        });
+
+        if (errorCount > 0) {
+          document.getElementById('solverMessage').innerText = `${errorCount} erro(s) encontrado(s)!`;
+        } else {
+          document.getElementById('solverMessage').innerText = 'Nenhum erro nas células pintadas.';
+        }
+
+        this.drawSolverCanvas();
+      },
+
+      downloadSolvedPng() {
+        const a = document.createElement('a');
+        a.href = this.solver.revealDataUrl || this.solver.originalDataUrl;
+        a.download = 'hiperpixel-resolvido.png';
+        a.click();
+      },
+
+      rgbToHex(r, g, b) {
+        return "#" + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('');
+      }
+    };
+
+    window.addEventListener('DOMContentLoaded', () => app.init());
+  </script>
+</body>
+</html>
